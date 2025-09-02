@@ -88,6 +88,30 @@ Consider using:
 - Penetration testing tools
 - OWASP guidelines and resources
 
+## Secrets & Tokens
+- [ ] No API keys, tokens, passwords, certificates, or credentials committed
+- [ ] `.env*`, `*.pem`, `*.key`, `*.pfx`, `*credentials*` ignored via `.gitignore`
+- [ ] Secrets are not logged or exposed in error messages
+- [ ] Any leaked credentials have been rotated/invalidated
+- [ ] Secret scanning performed (must pass) using one or more tools below
+
+### Secret Scanning Commands
+```bash
+# Install (Windows)
+choco install gitleaks
+pipx install trufflehog
+
+# Run scans
+gitleaks detect --source . --redact --no-banner
+trufflehog filesystem --only-verified .
+```
+
+### Git pre-commit hook (optional)
+```bash
+# .git/hooks/pre-commit
+gitleaks detect --source . --redact --no-banner || exit 1
+```
+
 ## Documentation
 - [ ] Security architecture documented
 - [ ] Threat model created

@@ -8,6 +8,7 @@ Use this when you have local changes and want to open a PR. This command will au
 - Stage and commit changes
 - Push to remote
 - Create PR with GitHub CLI (or provide manual URL if CLI unavailable)
+- if CLI unavailable, try to make it available
 
 ## Prerequisites
 - GitHub CLI (`gh`) installed and authenticated
@@ -25,8 +26,8 @@ Use this when you have local changes and want to open a PR. This command will au
 ## Branch Rules
 - If on `main` or `master`, create a new branch.
 - Branch format (preferred): `[Jira-Ticket]/brief-description` (kebab-case description).
-  - Examples: `ABC-123/add-user-profile-card`, `FEAT/add-telemetry`
-  - Fallback if no ticket: `feat/brief-description`
+  - Examples: `ABC-123/add-user-profile-card`, `feat/add-telemetry` (fallback if no ticket)
+- Fallback if no ticket: `feat/brief-description`
 
 ## Automated Flow
 1. **Environment Check**:
@@ -38,15 +39,23 @@ Use this when you have local changes and want to open a PR. This command will au
    - If on `main/master`, create feature branch automatically
    - Branch name: `[Jira-Ticket]/brief-description` or `feat/brief-description`
 
-3. **Change Review**:
+3. **Pre-flight Gates (REQUIRED before commit/PR)**:
+   - Run `/light-review-existing-diffs` and ensure no critical items remain
+   - Run `/security-audit` with emphasis on configuration and secrets
+   - Perform a secrets scan (must pass before continuing)
+     - Gitleaks: `gitleaks detect --source . --redact --no-banner`
+     - TruffleHog: `trufflehog filesystem --only-verified .`
+   - If any issues are found, fix them and re-run the gates
+
+4. **Change Review**:
    - Show summary of changed files and modifications
    - Automatically stage all changes (or allow file selection)
 
-4. **Commit & Push**:
+5. **Commit & Push**:
    - Create commit with standardized message: `[Jira-Ticket] brief description`
    - Push to remote with upstream tracking
 
-5. **PR Creation**:
+6. **PR Creation**:
    - **Automatic Mode (Preferred)**:
      - Use `gh pr create` with rich description
      - Add reviewers, labels, and assignees automatically
@@ -55,7 +64,7 @@ Use this when you have local changes and want to open a PR. This command will au
      - Generate GitHub compare URL for manual creation
      - Provide pre-filled PR template
 
-6. **Post-Creation**:
+7. **Post-Creation**:
    - Display PR link and details
    - Suggest next steps for review and merging
 
@@ -80,12 +89,35 @@ Any additional context, concerns, or information reviewers should know.
 ## GitHub CLI Commands
 
 ### Setup & Authentication
+
+> **Note:** Installation commands are OS-specific. See [GitHub CLI installation docs](https://cli.github.com/manual/installation) for more details.
+
+#### Windows
 ```bash
 # Install GitHub CLI (if not already installed)
 winget install --id GitHub.cli
 # OR
 choco install gh
+```
 
+#### macOS
+```bash
+# Install GitHub CLI (if not already installed)
+brew install gh
+```
+
+#### Linux
+```bash
+# Install GitHub CLI (if not already installed)
+sudo apt install gh   # Debian/Ubuntu
+# OR
+sudo dnf install gh   # Fedora
+# OR
+sudo pacman -S github-cli   # Arch
+```
+
+#### Universal Setup
+```bash
 # Authenticate with GitHub
 gh auth login
 
